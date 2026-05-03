@@ -1,26 +1,29 @@
-name: CI
+name: Node CI
 
 on:
-  push:
+  - push
+  - pull_request
+
+env:
+  CI: true
 
 jobs:
-  test-and-lint:
+  build:
+
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    strategy:
+      matrix:
+        node-version: [18.x]
 
-      - name: Setup Node.js
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: make setup
-
-      - name: Run tests
-        run: make test
-
-      - name: Run linter
-        run: make lint
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: make install
+      - run: make lint
+      - run: make test
+      - uses: hexlet-components/hello-from-hexlet-action@release
